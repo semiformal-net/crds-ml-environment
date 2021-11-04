@@ -1,4 +1,8 @@
 steps:
+# TODO: hardcoded:
+#       notebook name=crds
+#       location=us-central1-b
+#       project=credit-risk-data-science
 - id: 'clone'
   name: 'gcr.io/cloud-builders/git'
   args: ['clone', 'https://github.com/semiformal-net/crds-ml-environment.git','/workspace/crds-ml-environment']
@@ -10,6 +14,18 @@ steps:
 - id: 'push'
   name: 'gcr.io/cloud-builders/docker'
   args: [ 'push', 'gcr.io/credit-risk-data-science/crds:latest']
+
+- id: 'delete old image'
+  name: 'gcr.io/cloud-builders/gcloud'
+  entrypoint: 'bash'
+  args:
+  - '-c'
+  - |
+    gcloud notebooks instances list --location=us-central1-b > /workspace/notebooks
+    awk '{ if($1=="crds"){print "ok"}}' /workspace/notebooks > /workspace/crds-exists
+    if [ ! -z $(cat /workspace/crds-exists) ]; then
+        gcloud notebooks instances delete crds --location=us-central1-b
+    fi
 
 - id: 'deploy image'
   name: 'gcr.io/cloud-builders/gcloud'
