@@ -1,0 +1,6 @@
+FROM gcr.io/deeplearning-platform-release/base-cpu@sha256:8452c62f189698513d86d939098493323cba63a4f31797ce82ab67ec97b19b94
+LABEL maintainer="Paul Edwards"
+RUN apt-get update && apt-get install -y \
+  default-jre \
+  && rm -rf /var/lib/apt/lists/*
+RUN pip install mlxtend==0.18.0 xgboost==1.4.2 dask==2021.8.1 dask-ml==1.9.0 google-cloud-aiplatform==1.4.0 shap==0.39.0 lxml==4.6.3 tabulate==0.8.9 pypmml==0.9.12 openscoring==0.6.0

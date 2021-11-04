@@ -1,0 +1,16 @@
+steps:
+- id: 'clone'
+  name: 'gcr.io/cloud-builders/git'
+  args: ['clone', 'https://github.com/semiformal-net/crds-ml-environment.git','/workspace/crds-ml-environment']
+
+- id: 'build'
+  name: 'gcr.io/cloud-builders/docker'
+  args: [ 'build', '-t', 'gcr.io/credit-risk-data-science/crds:latest', '/workspace/crds-ml-environment/docker' ]
+
+- id: 'push'
+  name: 'gcr.io/cloud-builders/docker'
+  args: [ 'push', 'gcr.io/credit-risk-data-science/crds:latest']
+
+- id: 'deploy image'
+  name: 'gcr.io/cloud-builders/gcloud'
+  args: ['notebooks', 'instances', 'create', 'crds', '--container-repository=gcr.io/credit-risk-data-science/crds', '--container-tag=latest --machine-type=e2-highcpu-4', '--location=us-central1-b']
