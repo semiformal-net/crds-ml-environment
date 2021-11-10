@@ -1,0 +1,63 @@
+steps:
+# TODO: hardcoded:
+#       notebook name=crds
+#       location=us-central1-b
+#       project=credit-risk-data-science
+
+- name: 'gcr.io/cloud-builders/git'
+  secretEnv: ['SSH_KEY']
+  entrypoint: 'bash'
+  args:
+  - -c
+  - |
+    echo "$$SSH_KEY" >> /root/.ssh/id_ed25519
+    chmod 600 /root/.ssh/id_ed25519
+    cat <<EOF >/root/.ssh/config
+    Hostname github.com
+    IdentityFile /root/.ssh/id_ed25519
+    EOF
+    ssh-keyscan github.com > known_hosts.github
+    cp known_hosts.github /root/.ssh/known_hosts
+  volumes:
+  - name: 'ssh'
+    path: /root/.ssh
+
+- id: 'cloneenv'
+  name: 'gcr.io/cloud-builders/git'
+  args: ['clone', 'https://github.com/semiformal-net/crds-ml-environment.git','/workspace/crds-ml-environment']
+
+- id: 'clonenotebooks'
+  name: 'gcr.io/cloud-builders/git'
+  args: ['clone', 'git@github.com:semiformal-net/crds-notebooks.git','/workspace/crds-ml-environment/docker/crds-notebooks']
+  volumes:
+  - name: 'ssh'
+    path: /root/.ssh
+
+- id: 'build'
+  name: 'gcr.io/cloud-builders/docker'
+  args: [ 'build', '-t', 'gcr.io/credit-risk-data-science/crds:latest', '/workspace/crds-ml-environment/docker/Dockerfile_notebooks' ]
+
+- id: 'push'
+  name: 'gcr.io/cloud-builders/docker'
+  args: [ 'push', 'gcr.io/credit-risk-data-science/crds:latest']
+
+- id: 'delete old image'
+  name: 'gcr.io/cloud-builders/gcloud'
+  entrypoint: 'bash'
+  args:
+  - '-c'
+  - |
+    gcloud notebooks instances list --location=us-central1-b > /workspace/notebooks
+    awk '{ if($1=="crds"){print "ok"}}' /workspace/notebooks > /workspace/crds-exists
+    if [ ! -z $(cat /workspace/crds-exists) ]; then
+        gcloud notebooks instances delete crds --location=us-central1-b
+    fi
+
+- id: 'deploy image'
+  name: 'gcr.io/cloud-builders/gcloud'
+  args: ['notebooks', 'instances', 'create', 'crds', '--container-repository=gcr.io/credit-risk-data-science/crds', '--container-tag=latest', '--machine-type=e2-highcpu-4', '--location=us-central1-b']
+
+availableSecrets:
+  secretManager:
+  - versionName: projects/credit-risk-data-science/secrets/crds-notebooks-deploy-key/versions/latest
+    env: 'SSH_KEY'
