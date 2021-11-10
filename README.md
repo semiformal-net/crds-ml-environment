@@ -59,3 +59,17 @@ git clone https://github.com/semiformal-net/crds-notebooks.git
 ```
 
 Start by running the `prepare_auto_data.ipynb` notebook to prepare the data we will use in the book. Other notebooks will be referenced in the text when it is time to open them.
+
+# Grab notebooks automatically
+
+I have issued a github deploy key that has access to pull the `crds-notebooks` repo. If you have access to that key you can use the authenticated deploy once you have the key in secret manager.
+
+Enable the [secrets api](https://console.cloud.google.com/security/secret-manager?referrer=search&project=credit-risk-data-science)
+
+```
+    name: crds-notebooks-deploy-key
+    upload file: /tmp/id_github
+    click "create secret"
+```
+
+Build with `cloudbuild_deploykey.yaml`
