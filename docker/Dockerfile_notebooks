@@ -1,6 +1,8 @@
 FROM gcr.io/deeplearning-platform-release/base-cpu@sha256:8452c62f189698513d86d939098493323cba63a4f31797ce82ab67ec97b19b94
 LABEL maintainer="Paul Edwards"
+# this doesn't work
 COPY crds-notebooks/* /home/jupyter/crds-notebooks/
+# this does work
 COPY crds-notebooks/* /crds-notebooks/
 RUN apt-get update && apt-get install -y \
   default-jre \
