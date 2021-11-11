@@ -33,9 +33,17 @@ steps:
   - name: 'ssh'
     path: /root/.ssh
 
+- name: 'gcr.io/cloud-builders/git'
+  entrypoint: 'bash'
+  args:
+  - -c
+  - |
+    echo "----------i have cloned notebooks--------------"
+    ls /workspace/crds-ml-environment/docker/crds-notebooks
+
 - id: 'build'
   name: 'gcr.io/cloud-builders/docker'
-  args: [ 'build', '-t', 'gcr.io/credit-risk-data-science/crds:latest', '/workspace/crds-ml-environment/docker/Dockerfile_notebooks' ]
+  args: [ 'build', '-t', 'gcr.io/credit-risk-data-science/crds:latest','-f','/workspace/crds-ml-environment/docker/Dockerfile_notebooks', '/workspace/crds-ml-environment/docker' ]
 
 - id: 'push'
   name: 'gcr.io/cloud-builders/docker'
