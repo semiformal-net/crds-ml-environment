@@ -62,9 +62,11 @@ Start by running the `prepare_auto_data.ipynb` notebook to prepare the data we w
 
 # Grab notebooks automatically
 
-I have issued a github deploy key that has access to pull the `crds-notebooks` repo. If you have access to that key you can use the authenticated deploy once you have the key in secret manager.
+I have issued a github deploy key that has access to pull the private `crds-notebooks` repo (per [these instructions](https://cloud.google.com/build/docs/access-github-from-build)). If you have access to that key you can use the authenticated deploy once you have the key in secret manager.
 
-Enable the [secrets api](https://console.cloud.google.com/security/secret-manager?referrer=search&project=credit-risk-data-science)
+First enable the [secrets api](https://console.cloud.google.com/flows/enableapi?apiid=secretmanager.googleapis.com,cloudbuild.googleapis.com&_ga=2.62677420.1826820591.1636573492-1369367446.1630458144)
+
+Then enter the key into [secret manager](https://console.cloud.google.com/security/secret-manager?referrer=search&project=credit-risk-data-science)
 
 ```
     name: crds-notebooks-deploy-key
