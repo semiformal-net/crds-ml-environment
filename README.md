@@ -74,4 +74,14 @@ Then enter the key into [secret manager](https://console.cloud.google.com/securi
     click "create secret"
 ```
 
-Build with `cloudbuild_deploykey.yaml`
+Ensure that cloudbuild has persmissions to access secrets,
+
+```
+PROJECT_ID=credit-risk-data-science
+PROJECT_NUMBER=$(gcloud projects describe $PROJECT_ID --format='value(projectNumber)')
+gcloud projects add-iam-policy-binding $PROJECT_ID \
+    --member=serviceAccount:$PROJECT_NUMBER@cloudbuild.gserviceaccount.com \
+    --role=roles/secretmanager.secretAccessor
+```
+
+And build with `gcloud builds submit --config docker/cloudbuild_deploykey.yaml`
