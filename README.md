@@ -79,9 +79,41 @@ Ensure that cloudbuild has persmissions to access secrets,
 ```
 PROJECT_ID=credit-risk-data-science
 PROJECT_NUMBER=$(gcloud projects describe $PROJECT_ID --format='value(projectNumber)')
+gcloud config set project $PROJECT_ID
 gcloud projects add-iam-policy-binding $PROJECT_ID \
     --member=serviceAccount:$PROJECT_NUMBER@cloudbuild.gserviceaccount.com \
     --role=roles/secretmanager.secretAccessor
 ```
 
 And build with `gcloud builds submit --config docker/cloudbuild_deploykey.yaml`
+
+# Cost reduction measures
+
+## Persistent disks
+
+By default, vertex notebooks have a boot disk and a data disk. Both seem mandatory, but you can only configure boot disk on notebook creation. The data disk is set to 100GB and is mounted to `/home/jupyter`. To reduce charges, we will reset the data disk to 10GB
+
+```
+gcloud compute instances stop --zone us-central1-b crds
+
+gcloud compute instances detach-disk --zone us-central1-b crds --device-name data
+gcloud compute disks create crds-data-small --size 10GB --type pd-standard --zone us-central1-b # 10 is min
+gcloud compute instances attach-disk --zone us-central1-b crds --disk crds-data-small --device-name data
+gcloud compute disks delete --quiet --zone us-central1-b crds-data
+gcloud compute instances start --zone us-central1-b crds
+
+# per: https://cloud.google.com/compute/docs/disks/add-persistent-disk#formatting
+gcloud beta compute ssh --zone "us-central1-b" "crds"  --project "credit-risk-data-science"
+    $ sudo lsblk
+    $ sudo mkfs.ext4 -m 0 -E lazy_itable_init=0,lazy_journal_init=0,discard /dev/sdb
+```
+
+Note that the `crds-data-small` disk will persist until manually deleted (even if you delete the `crds` notebook instance.
+
+## External IP
+
+If you are happy proxying into the notebook via google cloud console then you don't need a public IP. This greatly increases the security of the notebook as well.
+
+```
+--no-public-ip
+```

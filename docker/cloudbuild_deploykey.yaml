@@ -63,7 +63,7 @@ steps:
 
 - id: 'deploy image'
   name: 'gcr.io/cloud-builders/gcloud'
-  args: ['notebooks', 'instances', 'create', 'crds', '--container-repository=gcr.io/credit-risk-data-science/crds', '--container-tag=latest', '--machine-type=e2-highcpu-4', '--location=us-central1-b']
+  args: ['notebooks', 'instances', 'create', 'crds', '--container-repository=gcr.io/credit-risk-data-science/crds', '--container-tag=latest', '--machine-type=e2-highcpu-4', '--location=us-central1-b','--boot-disk-size=50']
 
 availableSecrets:
   secretManager:
